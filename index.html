@@ -1,1 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adventure Survival Game</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            background-color: #222;
+            color: white;
+        }
+        #gameCanvas {
+            display: block;
+            background-color: #87CEEB;
+            width: 100vw;
+            height: 100vh;
+        }
+        .inventory {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .health-bar {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 200px;
+            height: 20px;
+            background-color: red;
+            border: 2px solid #fff;
+            border-radius: 5px;
+        }
+        .health-bar .health {
+            background-color: green;
+            height: 100%;
+            width: 100%;
+            border-radius: 5px;
+        }
+        /* Touch control buttons */
+        .touch-control {
+            position: absolute;
+            bottom: 50px;
+            left: 50px;
+            width: 100px;
+            height: 100px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            color: black;
+            text-align: center;
+        }
+        .touch-action {
+            position: absolute;
+            bottom: 50px;
+            right: 50px;
+            width: 100px;
+            height: 100px;
+            background-color: rgba(0, 255, 0, 0.3);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            color: black;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <div class="health-bar">
+        <div class="health" id="health"></div>
+    </div>
+    <div class="inventory" id="inventory">Inventory: Empty</div>
+
+    <!-- Touch controls -->
+    <div class="touch-control" id="left">⬅️</div>
+    <div class="touch-control" id="right" style="left: 160px;">➡️</div>
+    <div class="touch-control" id="up" style="bottom: 160px; left: 110px;">⬆️</div>
+    <div class="touch-control" id="down" style="top: auto; bottom: 50px; left: 110px;">⬇️</div>
+    <div class="touch-action" id="shoot">🔫</div>
+    <div class="touch-action" id="magic" style="right: 160px;">🌀</div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let player = {
+            x: 100,
+            y: 100,
+            width: 40,
+            height: 40,
+            speed: 5,
+            color: 'blue',
+            health: 100,
+            isFalling: false,
+            fallStartY: 0,
+            ammo: 10
+        };
+
+        let map = {
+            width: 3000,
+            height: 2000
+        };
+
+        let keys = {};
+        let inventory = [];
+
+        // Weapon logic
+        let weapons = [
+            { x: 500, y: 500, width: 20, height: 20, type: 'pistol', ammo: 10 },
+            { x: 700, y: 700, width: 20, height: 20, type: 'magic' }
+        ];
+
+        let bullets = [];
+        let portals = [];
+        let shieldActive = false;
+
+        function drawPlayer() {
+            ctx.fillStyle = player.color;
+            ctx.fillRect(player.x - camera.x, player.y - camera.y, player.width, player.height);
+        }
+
+        function drawWeapons() {
+            weapons.forEach(weapon => {
+                ctx.fillStyle = 'yellow';
+                ctx.fillRect(weapon.x - camera.x, weapon.y - camera.y, weapon.width, weapon.height);
+            });
+        }
+
+        function drawBots() {
+            bots.forEach(bot => {
+                ctx.fillStyle = bot.color;
+                ctx.fillRect(bot.x - camera.x, bot.y - camera.y, bot.width, bot.height);
+                moveBot(bot);
+            });
+        }
+
+        function moveBot(bot) {
+            let dx = player.x - bot.x;
+            let dy = player.y - bot.y;
+            let distance = Math.sqrt(dx * dx + dy * dy);
+            bot.x += (dx / distance) * bot.speed;
+            bot.y += (dy / distance) * bot.speed;
+
+            if (distance < player.width) {
+                if (!shieldActive) {
+                    player.health -= 0.1;
+                    updateHealth();
+                }
+            }
+        }
+
+        function updateHealth() {
+            const healthBar = document.getElementById('health');
+            healthBar.style.width = player.health + '%';
+            if (player.health <= 0) {
+                alert('Game Over! You have been defeated.');
+                player.health = 100;
+                updateHealth();
+            }
+        }
+
+        function handleInput() {
+            if (keys['ArrowUp']) player.y -= player.speed;
+            if (keys['ArrowDown']) player.y += player.speed;
+            if (keys['ArrowLeft']) player.x -= player.speed;
+            if (keys['ArrowRight']) player.x += player.speed;
+        }
+
+        function fireBullet() {
+            bullets.push({ x: player.x, y: player.y, dx: 1, dy: 0 });
+        }
+
+        function drawBullets() {
+            bullets.forEach((bullet, index) => {
+                bullet.x += bullet.dx * 10;
+                ctx.fillStyle = 'black';
+                ctx.fillRect(bullet.x - camera.x, bullet.y - camera.y, 5, 5);
+                if (bullet.x > canvas.width) {
+                    bullets.splice(index, 1);
+                }
+            });
+        }
+
+        let camera = {
+            x: 0,
+            y: 0,
+            width: canvas.width,
+            height: canvas.height
+        };
+
+        function updateCamera() {
+            camera.x = Math.max(0, Math.min(player.x - camera.width / 2, map.width - camera.width));
+            camera.y = Math.max(0, Math.min(player.y - camera.height / 2, map.height - camera.height));
+        }
+
+        function checkForWeaponPickup() {
+            weapons.forEach((weapon, index) => {
+                if (player.x < weapon.x + weapon.width &&
+                    player.x + player.width > weapon.x &&
+                    player.y < weapon.y + weapon.height &&
+                    player.y + player.height > weapon.y) {
+                    if (weapon.type === 'pistol') {
+                        inventory.push(weapon.type);
+                        player.ammo += weapon.ammo;
+                    } else if (weapon.type === 'magic') {
+                        inventory.push('magic');
+                    }
+
+                    document.getElementById('inventory').innerText = `Inventory: ${inventory.join(', ')}`;
+                    weapons.splice(index, 1);
+                }
+            });
+        }
+
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            handleInput();
+            checkForWeaponPickup();
+            updateCamera();
+
+            drawWeapons();
+            drawPlayer();
+            drawBots();
+            drawBullets();
+            requestAnimationFrame(gameLoop);
+        }
+
+        window.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+        });
+
+        window.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+
+        // Touch controls
+        document.getElementById('left').addEventListener('touchstart', () => { keys['ArrowLeft'] = true; });
+        document.getElementById('left').addEventListener('touchend', () => { keys['ArrowLeft'] = false; });
+
+        document.getElementById('right').addEventListener('touchstart', () => { keys['ArrowRight'] = true; });
+        document.getElementById('right').addEventListener('touchend', () => { keys['ArrowRight'] = false; });
+
+        document.getElementById('up').addEventListener('touchstart', () => { keys['ArrowUp'] = true; });
+        document.getElementById('up').addEventListener('touchend', () => { keys['ArrowUp'] = false; });
+
+        document.getElementById('down').addEventListener('touchstart', () => { keys['ArrowDown'] = true; });
+        document.getElementById('down').addEventListener('touchend', () => { keys['ArrowDown'] = false; });
+
+        document.getElementById('shoot').addEventListener('touchstart', fireBullet);
+        document.getElementById('magic').addEventListener('touchstart', () => {
+            portals.push({ x: player.x, y: player.y });
+        });
+
+        updateHealth();
+        gameLoop();
+    </script>
+</body>
+</html>
 
