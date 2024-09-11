@@ -43,37 +43,6 @@
             width: 100%;
             border-radius: 5px;
         }
-        /* Touch control buttons */
-        .touch-control {
-            position: absolute;
-            bottom: 50px;
-            left: 50px;
-            width: 100px;
-            height: 100px;
-            background-color: rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 24px;
-            color: black;
-            text-align: center;
-        }
-        .touch-action {
-            position: absolute;
-            bottom: 50px;
-            right: 50px;
-            width: 100px;
-            height: 100px;
-            background-color: rgba(0, 255, 0, 0.3);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 24px;
-            color: black;
-            text-align: center;
-        }
     </style>
 </head>
 <body>
@@ -83,14 +52,6 @@
     </div>
     <div class="inventory" id="inventory">Inventory: Empty</div>
 
-    <!-- Touch controls -->
-    <div class="touch-control" id="left">⬅️</div>
-    <div class="touch-control" id="right" style="left: 160px;">➡️</div>
-    <div class="touch-control" id="up" style="bottom: 160px; left: 110px;">⬆️</div>
-    <div class="touch-control" id="down" style="top: auto; bottom: 50px; left: 110px;">⬇️</div>
-    <div class="touch-action" id="shoot">🔫</div>
-    <div class="touch-action" id="magic" style="right: 160px;">🌀</div>
-
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -98,13 +59,20 @@
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
+        // Load images for the player, bot, and background
+        const playerImage = new Image();
+        playerImage.src = 'https://example.com/player.png'; // Replace with a real image URL
+        const botImage = new Image();
+        botImage.src = 'https://example.com/bot.png'; // Replace with a real image URL
+        const backgroundImage = new Image();
+        backgroundImage.src = 'https://example.com/background.jpg'; // Replace with a real image URL
+
         let player = {
             x: 100,
             y: 100,
             width: 40,
             height: 40,
             speed: 5,
-            color: 'blue',
             health: 100,
             isFalling: false,
             fallStartY: 0,
@@ -119,32 +87,29 @@
         let keys = {};
         let inventory = [];
 
-        // Weapon logic
         let weapons = [
-            { x: 500, y: 500, width: 20, height: 20, type: 'pistol', ammo: 10 },
-            { x: 700, y: 700, width: 20, height: 20, type: 'magic' }
+            { x: 500, y: 500, width: 20, height: 20, type: 'pistol', ammo: 10 }
         ];
 
         let bullets = [];
-        let portals = [];
-        let shieldActive = false;
+        let bots = [
+            { x: 800, y: 800, width: 40, height: 40, speed: 2 }
+        ];
 
-        function drawPlayer() {
-            ctx.fillStyle = player.color;
-            ctx.fillRect(player.x - camera.x, player.y - camera.y, player.width, player.height);
+        function drawBackground() {
+            // Draw background image
+            ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
         }
 
-        function drawWeapons() {
-            weapons.forEach(weapon => {
-                ctx.fillStyle = 'yellow';
-                ctx.fillRect(weapon.x - camera.x, weapon.y - camera.y, weapon.width, weapon.height);
-            });
+        function drawPlayer() {
+            // Draw player with an image
+            ctx.drawImage(playerImage, player.x - camera.x, player.y - camera.y, player.width, player.height);
         }
 
         function drawBots() {
+            // Draw bots with images
             bots.forEach(bot => {
-                ctx.fillStyle = bot.color;
-                ctx.fillRect(bot.x - camera.x, bot.y - camera.y, bot.width, bot.height);
+                ctx.drawImage(botImage, bot.x - camera.x, bot.y - camera.y, bot.width, bot.height);
                 moveBot(bot);
             });
         }
@@ -157,10 +122,8 @@
             bot.y += (dy / distance) * bot.speed;
 
             if (distance < player.width) {
-                if (!shieldActive) {
-                    player.health -= 0.1;
-                    updateHealth();
-                }
+                player.health -= 0.1;
+                updateHealth();
             }
         }
 
@@ -208,32 +171,11 @@
             camera.y = Math.max(0, Math.min(player.y - camera.height / 2, map.height - camera.height));
         }
 
-        function checkForWeaponPickup() {
-            weapons.forEach((weapon, index) => {
-                if (player.x < weapon.x + weapon.width &&
-                    player.x + player.width > weapon.x &&
-                    player.y < weapon.y + weapon.height &&
-                    player.y + player.height > weapon.y) {
-                    if (weapon.type === 'pistol') {
-                        inventory.push(weapon.type);
-                        player.ammo += weapon.ammo;
-                    } else if (weapon.type === 'magic') {
-                        inventory.push('magic');
-                    }
-
-                    document.getElementById('inventory').innerText = `Inventory: ${inventory.join(', ')}`;
-                    weapons.splice(index, 1);
-                }
-            });
-        }
-
         function gameLoop() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBackground();
             handleInput();
-            checkForWeaponPickup();
             updateCamera();
 
-            drawWeapons();
             drawPlayer();
             drawBots();
             drawBullets();
@@ -248,27 +190,7 @@
             keys[e.key] = false;
         });
 
-        // Touch controls
-        document.getElementById('left').addEventListener('touchstart', () => { keys['ArrowLeft'] = true; });
-        document.getElementById('left').addEventListener('touchend', () => { keys['ArrowLeft'] = false; });
-
-        document.getElementById('right').addEventListener('touchstart', () => { keys['ArrowRight'] = true; });
-        document.getElementById('right').addEventListener('touchend', () => { keys['ArrowRight'] = false; });
-
-        document.getElementById('up').addEventListener('touchstart', () => { keys['ArrowUp'] = true; });
-        document.getElementById('up').addEventListener('touchend', () => { keys['ArrowUp'] = false; });
-
-        document.getElementById('down').addEventListener('touchstart', () => { keys['ArrowDown'] = true; });
-        document.getElementById('down').addEventListener('touchend', () => { keys['ArrowDown'] = false; });
-
-        document.getElementById('shoot').addEventListener('touchstart', fireBullet);
-        document.getElementById('magic').addEventListener('touchstart', () => {
-            portals.push({ x: player.x, y: player.y });
-        });
-
-        updateHealth();
         gameLoop();
     </script>
 </body>
 </html>
-
