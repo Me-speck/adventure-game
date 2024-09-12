@@ -59,13 +59,13 @@
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        // Load images for the player, bot, and background
+        // Use free image URLs
         const playerImage = new Image();
-        playerImage.src = 'https://i.imgur.com/NhAHF9M.png'; // Player image placeholder
+        playerImage.src = 'https://cdn.pixabay.com/photo/2016/03/31/19/56/avatar-1295431_960_720.png'; // Free avatar image
         const botImage = new Image();
-        botImage.src = 'https://i.imgur.com/2xOaO7N.png'; // Bot image placeholder
+        botImage.src = 'https://cdn.pixabay.com/photo/2016/03/31/20/13/alien-1295435_960_720.png'; // Free bot image
         const backgroundImage = new Image();
-        backgroundImage.src = 'https://i.imgur.com/AzUjWlg.png'; // Background placeholder
+        backgroundImage.src = 'https://cdn.pixabay.com/photo/2016/03/27/22/16/forest-1288042_960_720.jpg'; // Free forest background
 
         let player = {
             x: 100,
@@ -168,29 +168,4 @@
 
         function updateCamera() {
             camera.x = Math.max(0, Math.min(player.x - camera.width / 2, map.width - camera.width));
-            camera.y = Math.max(0, Math.min(player.y - camera.height / 2, map.height - camera.height));
-        }
-
-        function gameLoop() {
-            drawBackground();
-            handleInput();
-            updateCamera();
-
-            drawPlayer();
-            drawBots();
-            drawBullets();
-            requestAnimationFrame(gameLoop);
-        }
-
-        window.addEventListener('keydown', (e) => {
-            keys[e.key] = true;
-        });
-
-        window.addEventListener('keyup', (e) => {
-            keys[e.key] = false;
-        });
-
-        gameLoop();
-    </script>
-</body>
-</html>
+            camera.y = Math.max(0, Math
