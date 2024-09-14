@@ -14,7 +14,6 @@
         }
         #gameCanvas {
             display: block;
-            background-color: #87CEEB;
             width: 100vw;
             height: 100vh;
         }
@@ -90,22 +89,29 @@
         ];
 
         function drawBackground() {
-            // Draw a simple background
-            ctx.fillStyle = '#87CEEB'; // Sky blue
+            // Create a gradient background
+            let gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#87CEEB'); // Sky blue
+            gradient.addColorStop(1, '#228B22'); // Forest green
+            ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
 
         function drawPlayer() {
-            // Draw player as a simple rectangle
+            // Draw player as a more detailed shape
             ctx.fillStyle = player.color;
-            ctx.fillRect(player.x - camera.x, player.y - camera.y, player.width, player.height);
+            ctx.beginPath();
+            ctx.arc(player.x - camera.x + player.width / 2, player.y - camera.y + player.height / 2, player.width / 2, 0, Math.PI * 2);
+            ctx.fill();
         }
 
         function drawBots() {
-            // Draw bots as simple rectangles
+            // Draw bots as more detailed shapes
             bots.forEach(bot => {
                 ctx.fillStyle = bot.color;
-                ctx.fillRect(bot.x - camera.x, bot.y - camera.y, bot.width, bot.height);
+                ctx.beginPath();
+                ctx.arc(bot.x - camera.x + bot.width / 2, bot.y - camera.y + bot.height / 2, bot.width / 2, 0, Math.PI * 2);
+                ctx.fill();
                 moveBot(bot);
             });
         }
