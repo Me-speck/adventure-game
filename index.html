@@ -59,20 +59,13 @@
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        // Use free image URLs
-        const playerImage = new Image();
-        playerImage.src = 'https://cdn.pixabay.com/photo/2016/03/31/19/56/avatar-1295431_960_720.png'; // Free avatar image
-        const botImage = new Image();
-        botImage.src = 'https://cdn.pixabay.com/photo/2016/03/31/20/13/alien-1295435_960_720.png'; // Free bot image
-        const backgroundImage = new Image();
-        backgroundImage.src = 'https://cdn.pixabay.com/photo/2016/03/27/22/16/forest-1288042_960_720.jpg'; // Free forest background
-
         let player = {
             x: 100,
             y: 100,
             width: 40,
             height: 40,
             speed: 5,
+            color: 'blue',
             health: 100,
             isFalling: false,
             fallStartY: 0,
@@ -93,23 +86,26 @@
 
         let bullets = [];
         let bots = [
-            { x: 800, y: 800, width: 40, height: 40, speed: 2 }
+            { x: 800, y: 800, width: 40, height: 40, color: 'red', speed: 2 }
         ];
 
         function drawBackground() {
-            // Draw background image
-            ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+            // Draw a simple background
+            ctx.fillStyle = '#87CEEB'; // Sky blue
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
 
         function drawPlayer() {
-            // Draw player with an image
-            ctx.drawImage(playerImage, player.x - camera.x, player.y - camera.y, player.width, player.height);
+            // Draw player as a simple rectangle
+            ctx.fillStyle = player.color;
+            ctx.fillRect(player.x - camera.x, player.y - camera.y, player.width, player.height);
         }
 
         function drawBots() {
-            // Draw bots with images
+            // Draw bots as simple rectangles
             bots.forEach(bot => {
-                ctx.drawImage(botImage, bot.x - camera.x, bot.y - camera.y, bot.width, bot.height);
+                ctx.fillStyle = bot.color;
+                ctx.fillRect(bot.x - camera.x, bot.y - camera.y, bot.width, bot.height);
                 moveBot(bot);
             });
         }
@@ -168,4 +164,29 @@
 
         function updateCamera() {
             camera.x = Math.max(0, Math.min(player.x - camera.width / 2, map.width - camera.width));
-            camera.y = Math.max(0, Math
+            camera.y = Math.max(0, Math.min(player.y - camera.height / 2, map.height - camera.height));
+        }
+
+        function gameLoop() {
+            drawBackground();
+            handleInput();
+            updateCamera();
+
+            drawPlayer();
+            drawBots();
+            drawBullets();
+            requestAnimationFrame(gameLoop);
+        }
+
+        window.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+        });
+
+        window.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+
+        gameLoop();
+    </script>
+</body>
+</html>
