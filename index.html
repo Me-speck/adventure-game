@@ -64,8 +64,8 @@
         let player = {
             x: 100,
             y: 100,
-            width: 40,
-            height: 40,
+            width: 50,
+            height: 50,
             speed: 5,
             color: 'blue',
             health: 100,
@@ -88,33 +88,26 @@
 
         let bullets = [];
         let bots = [
-            { x: 800, y: 800, width: 40, height: 40, color: 'red', speed: 2 }
+            { x: 800, y: 800, width: 50, height: 50, color: 'red', speed: 2 }
         ];
 
         function drawBackground() {
-            // Create a gradient background
-            let gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            gradient.addColorStop(0, '#87CEEB'); // Sky blue
-            gradient.addColorStop(1, '#228B22'); // Forest green
-            ctx.fillStyle = gradient;
+            // Simple background color
+            ctx.fillStyle = '#228B22'; // Forest green
             ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
 
         function drawPlayer() {
-            // Draw player as a more detailed shape
+            // Draw player as a simple rectangle
             ctx.fillStyle = player.color;
-            ctx.beginPath();
-            ctx.arc(player.x - camera.x + player.width / 2, player.y - camera.y + player.height / 2, player.width / 2, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.fillRect(player.x - camera.x, player.y - camera.y, player.width, player.height);
         }
 
         function drawBots() {
-            // Draw bots as more detailed shapes
+            // Draw bots as simple rectangles
             bots.forEach(bot => {
                 ctx.fillStyle = bot.color;
-                ctx.beginPath();
-                ctx.arc(bot.x - camera.x + bot.width / 2, bot.y - camera.y + bot.height / 2, bot.width / 2, 0, Math.PI * 2);
-                ctx.fill();
+                ctx.fillRect(bot.x - camera.x, bot.y - camera.y, bot.width, bot.height);
                 moveBot(bot);
             });
         }
