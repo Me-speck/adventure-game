@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Character Sprite Adventure Game</title>
+    <title>Advanced Visual Adventure Game</title>
     <style>
         body {
             margin: 0;
@@ -47,7 +47,7 @@
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas" width="500" height="500"></canvas> <!-- Adjusted canvas size for easier debugging -->
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
     <div class="health-bar">
         <div class="health" id="health"></div>
     </div>
@@ -57,71 +57,85 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        // Load images for player and enemies
-        const playerImage = new Image();
-        playerImage.src = 'https://cdn.pixabay.com/photo/2013/07/12/19/01/horse-153197_960_720.png'; // Placeholder character
-        playerImage.onload = () => console.log("Player image loaded successfully.");
-        playerImage.onerror = () => console.error("Player image failed to load.");
-
-        const enemyImage = new Image();
-        enemyImage.src = 'https://cdn.pixabay.com/photo/2016/11/25/18/38/santa-claus-1850932_960_720.png'; // Placeholder enemy character
-        enemyImage.onload = () => console.log("Enemy image loaded successfully.");
-        enemyImage.onerror = () => console.error("Enemy image failed to load.");
-
+        // Load images for the background and player sprite
         const backgroundImage = new Image();
-        backgroundImage.src = 'https://cdn.pixabay.com/photo/2016/03/27/22/22/forest-1288886_960_720.jpg'; // Jungle background
-        backgroundImage.onload = () => console.log("Background image loaded successfully.");
-        backgroundImage.onerror = () => console.error("Background image failed to load.");
+        backgroundImage.src = 'https://cdn.pixabay.com/photo/2016/03/27/22/22/forest-1288886_960_720.jpg'; // High-quality jungle background
+
+        const playerSpriteSheet = new Image();
+        playerSpriteSheet.src = 'https://cdn.pixabay.com/photo/2020/04/27/18/32/human-5104875_960_720.png'; // Placeholder sprite sheet
 
         let player = {
             x: 100,
-            y: 100,
+            y: 300,
             width: 50,
             height: 50,
             speed: 5,
             health: 100,
+            frameX: 0,
+            frameY: 0,
+            frameWidth: 32,
+            frameHeight: 32,
+            moving: false
         };
 
-        let bots = [
-            { x: 200, y: 200, width: 50, height: 50, speed: 2 }
-        ];
-
         function drawBackground() {
-            if (backgroundImage.complete && backgroundImage.naturalHeight !== 0) {
-                ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
-            } else {
-                ctx.fillStyle = '#87CEEB';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-            }
+            ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
         }
 
         function drawPlayer() {
-            if (playerImage.complete && playerImage.naturalHeight !== 0) {
-                ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
-            } else {
-                ctx.fillStyle = 'blue';
-                ctx.fillRect(player.x, player.y, player.width, player.height);
+            ctx.drawImage(playerSpriteSheet, player.frameX * player.frameWidth, player.frameY * player.frameHeight,
+                          player.frameWidth, player.frameHeight, player.x, player.y, player.width, player.height);
+        }
+
+        function movePlayer() {
+            if (keys['ArrowUp']) {
+                player.y -= player.speed;
+                player.frameY = 3; // Assuming the sprite sheet has rows for different directions
+                player.moving = true;
+            }
+            if (keys['ArrowDown']) {
+                player.y += player.speed;
+                player.frameY = 0; // Front facing row in sprite sheet
+                player.moving = true;
+            }
+            if (keys['ArrowLeft']) {
+                player.x -= player.speed;
+                player.frameY = 1; // Left facing row
+                player.moving = true;
+            }
+            if (keys['ArrowRight']) {
+                player.x += player.speed;
+                player.frameY = 2; // Right facing row
+                player.moving = true;
             }
         }
 
-        function drawBots() {
-            bots.forEach(bot => {
-                if (enemyImage.complete && enemyImage.naturalHeight !== 0) {
-                    ctx.drawImage(enemyImage, bot.x, bot.y, bot.width, bot.height);
-                } else {
-                    ctx.fillStyle = 'red';
-                    ctx.fillRect(bot.x, bot.y, bot.width, bot.height);
-                }
-            });
+        function updatePlayerFrame() {
+            if (player.moving) {
+                player.frameX = (player.frameX + 1) % 4; // Assuming 4 frames per row in the sprite sheet
+                player.moving = false;
+            }
         }
 
+        let keys = {};
+
         function gameLoop() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas before drawing
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawBackground();
+            movePlayer();
             drawPlayer();
-            drawBots();
+            updatePlayerFrame();
             requestAnimationFrame(gameLoop);
         }
+
+        window.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+        });
+
+        window.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+            player.moving = false;
+        });
 
         gameLoop();
     </script>
