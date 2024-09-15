@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Adventure Game</title>
+    <title>Interactive Adventure Game (Debug)</title>
     <style>
         body {
             margin: 0;
@@ -18,6 +18,7 @@
         }
         #gameCanvas {
             border: 2px solid #000;
+            background-color: #87CEEB; /* Light blue background for visibility */
         }
         .inventory {
             position: absolute;
@@ -57,25 +58,13 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        // Load images for the background and player sprite
-        const backgroundImage = new Image();
-        backgroundImage.src = 'https://cdn.pixabay.com/photo/2016/03/27/22/22/forest-1288886_960_720.jpg'; // High-quality jungle background
-
-        const playerSpriteSheet = new Image();
-        playerSpriteSheet.src = 'https://cdn.pixabay.com/photo/2020/04/27/18/32/human-5104875_960_720.png'; // Placeholder sprite sheet
-
         let player = {
             x: 100,
             y: 300,
             width: 50,
             height: 50,
             speed: 5,
-            health: 100,
-            frameX: 0,
-            frameY: 0,
-            frameWidth: 32,
-            frameHeight: 32,
-            moving: false
+            health: 100
         };
 
         let collectible = {
@@ -90,13 +79,9 @@
             { x: 600, y: 300, width: 50, height: 50, speed: 1, direction: 1 }
         ];
 
-        function drawBackground() {
-            ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
-        }
-
         function drawPlayer() {
-            ctx.drawImage(playerSpriteSheet, player.frameX * player.frameWidth, player.frameY * player.frameHeight,
-                          player.frameWidth, player.frameHeight, player.x, player.y, player.width, player.height);
+            ctx.fillStyle = 'blue';
+            ctx.fillRect(player.x, player.y, player.width, player.height);
         }
 
         function drawCollectible() {
@@ -117,23 +102,15 @@
         function movePlayer() {
             if (keys['ArrowUp']) {
                 player.y -= player.speed;
-                player.frameY = 3; // Assuming the sprite sheet has rows for different directions
-                player.moving = true;
             }
             if (keys['ArrowDown']) {
                 player.y += player.speed;
-                player.frameY = 0; // Front facing row in sprite sheet
-                player.moving = true;
             }
             if (keys['ArrowLeft']) {
                 player.x -= player.speed;
-                player.frameY = 1; // Left facing row
-                player.moving = true;
             }
             if (keys['ArrowRight']) {
                 player.x += player.speed;
-                player.frameY = 2; // Right facing row
-                player.moving = true;
             }
         }
 
@@ -142,13 +119,6 @@
             bot.x += bot.speed * bot.direction;
             if (bot.x < 0 || bot.x > canvas.width - bot.width) {
                 bot.direction *= -1; // Change direction on collision with canvas edge
-            }
-        }
-
-        function updatePlayerFrame() {
-            if (player.moving) {
-                player.frameX = (player.frameX + 1) % 4; // Assuming 4 frames per row in the sprite sheet
-                player.moving = false;
             }
         }
 
@@ -189,12 +159,10 @@
 
         function gameLoop() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawBackground();
-            movePlayer();
             drawPlayer();
-            updatePlayerFrame();
             drawCollectible();
             drawBots();
+            movePlayer();
             checkCollisions();
             requestAnimationFrame(gameLoop);
         }
@@ -205,7 +173,6 @@
 
         window.addEventListener('keyup', (e) => {
             keys[e.key] = false;
-            player.moving = false;
         });
 
         gameLoop();
