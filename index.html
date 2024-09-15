@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jumanji-Inspired Adventure Game</title>
+    <title>Debug Adventure Game</title>
     <style>
         body {
             margin: 0;
@@ -61,22 +61,6 @@
         canvas.width = 1000;
         canvas.height = 1000;
 
-        // Load images for player and enemies
-        const playerImage = new Image();
-        playerImage.src = 'https://cdn.pixabay.com/photo/2021/02/25/16/29/animal-6050216_960_720.png'; // Placeholder animal character
-        playerImage.onload = () => console.log("Player image loaded successfully.");
-        playerImage.onerror = () => console.error("Player image failed to load.");
-
-        const enemyImage = new Image();
-        enemyImage.src = 'https://cdn.pixabay.com/photo/2021/06/23/21/49/alien-6362078_960_720.png'; // Placeholder alien character
-        enemyImage.onload = () => console.log("Enemy image loaded successfully.");
-        enemyImage.onerror = () => console.error("Enemy image failed to load.");
-
-        const backgroundImage = new Image();
-        backgroundImage.src = 'https://cdn.pixabay.com/photo/2016/03/27/22/22/forest-1288886_960_720.jpg'; // Jungle background
-        backgroundImage.onload = () => console.log("Background image loaded successfully.");
-        backgroundImage.onerror = () => console.error("Background image failed to load.");
-
         let player = {
             x: 100,
             y: 100,
@@ -91,31 +75,22 @@
         ];
 
         function drawBackground() {
-            if (backgroundImage.complete && backgroundImage.naturalHeight !== 0) {
-                ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
-            } else {
-                ctx.fillStyle = '#87CEEB';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-            }
+            console.log("Drawing background"); // Debug log
+            ctx.fillStyle = '#87CEEB';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
 
         function drawPlayer() {
-            if (playerImage.complete && playerImage.naturalHeight !== 0) {
-                ctx.drawImage(playerImage, player.x - camera.x, player.y - camera.y, player.width, player.height);
-            } else {
-                ctx.fillStyle = 'blue';
-                ctx.fillRect(player.x - camera.x, player.y - camera.y, player.width, player.height);
-            }
+            console.log("Drawing player"); // Debug log
+            ctx.fillStyle = 'blue';
+            ctx.fillRect(player.x - camera.x, player.y - camera.y, player.width, player.height);
         }
 
         function drawBots() {
+            console.log("Drawing bots"); // Debug log
             bots.forEach(bot => {
-                if (enemyImage.complete && enemyImage.naturalHeight !== 0) {
-                    ctx.drawImage(enemyImage, bot.x - camera.x, bot.y - camera.y, bot.width, bot.height);
-                } else {
-                    ctx.fillStyle = 'red';
-                    ctx.fillRect(bot.x - camera.x, bot.y - camera.y, bot.width, bot.height);
-                }
+                ctx.fillStyle = 'red';
+                ctx.fillRect(bot.x - camera.x, bot.y - camera.y, bot.width, bot.height);
                 moveBot(bot);
             });
         }
@@ -164,6 +139,7 @@
         }
 
         function gameLoop() {
+            console.log("Game loop running"); // Debug log
             ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas before drawing
             drawBackground();
             handleInput();
