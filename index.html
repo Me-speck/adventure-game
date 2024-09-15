@@ -17,7 +17,6 @@
             height: 100vh;
         }
         #gameCanvas {
-            background-color: #87CEEB;
             border: 2px solid #000;
         }
         .inventory {
@@ -62,68 +61,40 @@
         canvas.width = 1000;
         canvas.height = 1000;
 
+        // Load images for player and enemies
+        const playerImage = new Image();
+        playerImage.src = 'https://cdn.pixabay.com/photo/2021/02/25/16/29/animal-6050216_960_720.png'; // Placeholder animal character
+
+        const enemyImage = new Image();
+        enemyImage.src = 'https://cdn.pixabay.com/photo/2021/06/23/21/49/alien-6362078_960_720.png'; // Placeholder alien character
+
+        const backgroundImage = new Image();
+        backgroundImage.src = 'https://cdn.pixabay.com/photo/2016/03/27/22/22/forest-1288886_960_720.jpg'; // Jungle background
+
         let player = {
             x: 100,
             y: 100,
             width: 50,
             height: 50,
             speed: 5,
-            color: 'blue',
             health: 100,
-            isFalling: false,
-            fallStartY: 0,
-            ammo: 10
         };
-
-        let map = {
-            width: 3000,
-            height: 2000
-        };
-
-        let keys = {};
-        let inventory = [];
-
-        let traps = [
-            { x: 300, y: 300, width: 40, height: 40, color: 'orange' }, // Simple trap
-        ];
 
         let bots = [
-            { x: 800, y: 800, width: 50, height: 50, color: 'red', speed: 2 }
+            { x: 800, y: 800, width: 50, height: 50, speed: 2 }
         ];
 
         function drawBackground() {
-            // Create a jungle background using simple graphics
-            ctx.fillStyle = '#228B22'; // Forest green
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Add some trees and bushes
-            ctx.fillStyle = '#006400'; // Dark green
-            for (let i = 0; i < 10; i++) {
-                ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 30, 100);
-                ctx.beginPath();
-                ctx.arc(Math.random() * canvas.width, Math.random() * canvas.height, 50, 0, Math.PI * 2);
-                ctx.fill();
-            }
+            ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
         }
 
         function drawPlayer() {
-            // Draw player as a simple rectangle (placeholder for a character sprite)
-            ctx.fillStyle = player.color;
-            ctx.fillRect(player.x - camera.x, player.y - camera.y, player.width, player.height);
-        }
-
-        function drawTraps() {
-            traps.forEach(trap => {
-                ctx.fillStyle = trap.color;
-                ctx.fillRect(trap.x - camera.x, trap.y - camera.y, trap.width, trap.height);
-            });
+            ctx.drawImage(playerImage, player.x - camera.x, player.y - camera.y, player.width, player.height);
         }
 
         function drawBots() {
-            // Draw bots as simple rectangles (placeholder for jungle creatures)
             bots.forEach(bot => {
-                ctx.fillStyle = bot.color;
-                ctx.fillRect(bot.x - camera.x, bot.y - camera.y, bot.width, bot.height);
+                ctx.drawImage(enemyImage, bot.x - camera.x, bot.y - camera.y, bot.width, bot.height);
                 moveBot(bot);
             });
         }
@@ -158,30 +129,7 @@
             if (keys['ArrowRight']) player.x += player.speed;
         }
 
-        function checkCollisions() {
-            // Check collision with traps
-            traps.forEach(trap => {
-                if (player.x < trap.x + trap.width &&
-                    player.x + player.width > trap.x &&
-                    player.y < trap.y + trap.height &&
-                    player.y + player.height > trap.y) {
-                    player.health -= 1;
-                    updateHealth();
-                }
-            });
-        }
-
-        function drawBullets() {
-            bullets.forEach((bullet, index) => {
-                bullet.x += bullet.dx * 10;
-                ctx.fillStyle = 'black';
-                ctx.fillRect(bullet.x - camera.x, bullet.y - camera.y, 5, 5);
-                if (bullet.x > canvas.width) {
-                    bullets.splice(index, 1);
-                }
-            });
-        }
-
+        let keys = {};
         let camera = {
             x: 0,
             y: 0,
@@ -200,10 +148,7 @@
             updateCamera();
 
             drawPlayer();
-            drawTraps();
             drawBots();
-            drawBullets();
-            checkCollisions();
             requestAnimationFrame(gameLoop);
         }
 
