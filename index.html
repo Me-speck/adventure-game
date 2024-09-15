@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Visual Adventure Game</title>
+    <title>Interactive Adventure Game</title>
     <style>
         body {
             margin: 0;
@@ -78,6 +78,18 @@
             moving: false
         };
 
+        let collectible = {
+            x: 400,
+            y: 200,
+            width: 20,
+            height: 20,
+            collected: false
+        };
+
+        let bots = [
+            { x: 600, y: 300, width: 50, height: 50, speed: 1, direction: 1 }
+        ];
+
         function drawBackground() {
             ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
         }
@@ -85,6 +97,21 @@
         function drawPlayer() {
             ctx.drawImage(playerSpriteSheet, player.frameX * player.frameWidth, player.frameY * player.frameHeight,
                           player.frameWidth, player.frameHeight, player.x, player.y, player.width, player.height);
+        }
+
+        function drawCollectible() {
+            if (!collectible.collected) {
+                ctx.fillStyle = 'yellow';
+                ctx.fillRect(collectible.x, collectible.y, collectible.width, collectible.height);
+            }
+        }
+
+        function drawBots() {
+            bots.forEach(bot => {
+                ctx.fillStyle = 'red';
+                ctx.fillRect(bot.x, bot.y, bot.width, bot.height);
+                moveBot(bot);
+            });
         }
 
         function movePlayer() {
@@ -110,10 +137,51 @@
             }
         }
 
+        function moveBot(bot) {
+            // Simple patrol movement
+            bot.x += bot.speed * bot.direction;
+            if (bot.x < 0 || bot.x > canvas.width - bot.width) {
+                bot.direction *= -1; // Change direction on collision with canvas edge
+            }
+        }
+
         function updatePlayerFrame() {
             if (player.moving) {
                 player.frameX = (player.frameX + 1) % 4; // Assuming 4 frames per row in the sprite sheet
                 player.moving = false;
+            }
+        }
+
+        function checkCollisions() {
+            // Check collision with collectible
+            if (!collectible.collected &&
+                player.x < collectible.x + collectible.width &&
+                player.x + player.width > collectible.x &&
+                player.y < collectible.y + collectible.height &&
+                player.y + player.height > collectible.y) {
+                    collectible.collected = true;
+                    document.getElementById('inventory').textContent = "Inventory: Item Collected!";
+            }
+
+            // Check collision with bots
+            bots.forEach(bot => {
+                if (player.x < bot.x + bot.width &&
+                    player.x + player.width > bot.x &&
+                    player.y < bot.y + bot.height &&
+                    player.y + player.height > bot.y) {
+                        player.health -= 0.1;
+                        updateHealth();
+                }
+            });
+        }
+
+        function updateHealth() {
+            const healthBar = document.getElementById('health');
+            healthBar.style.width = player.health + '%';
+            if (player.health <= 0) {
+                alert('Game Over! You have been defeated.');
+                player.health = 100;
+                updateHealth();
             }
         }
 
@@ -125,6 +193,9 @@
             movePlayer();
             drawPlayer();
             updatePlayerFrame();
+            drawCollectible();
+            drawBots();
+            checkCollisions();
             requestAnimationFrame(gameLoop);
         }
 
