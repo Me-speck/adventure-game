@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Debug Adventure Game</title>
+    <title>Character Sprite Adventure Game</title>
     <style>
         body {
             margin: 0;
@@ -47,7 +47,7 @@
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas" width="1000" height="1000"></canvas>
+    <canvas id="gameCanvas" width="500" height="500"></canvas> <!-- Adjusted canvas size for easier debugging -->
     <div class="health-bar">
         <div class="health" id="health"></div>
     </div>
@@ -57,9 +57,21 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        // Fixed canvas size
-        canvas.width = 1000;
-        canvas.height = 1000;
+        // Load images for player and enemies
+        const playerImage = new Image();
+        playerImage.src = 'https://cdn.pixabay.com/photo/2013/07/12/19/01/horse-153197_960_720.png'; // Placeholder character
+        playerImage.onload = () => console.log("Player image loaded successfully.");
+        playerImage.onerror = () => console.error("Player image failed to load.");
+
+        const enemyImage = new Image();
+        enemyImage.src = 'https://cdn.pixabay.com/photo/2016/11/25/18/38/santa-claus-1850932_960_720.png'; // Placeholder enemy character
+        enemyImage.onload = () => console.log("Enemy image loaded successfully.");
+        enemyImage.onerror = () => console.error("Enemy image failed to load.");
+
+        const backgroundImage = new Image();
+        backgroundImage.src = 'https://cdn.pixabay.com/photo/2016/03/27/22/22/forest-1288886_960_720.jpg'; // Jungle background
+        backgroundImage.onload = () => console.log("Background image loaded successfully.");
+        backgroundImage.onerror = () => console.error("Background image failed to load.");
 
         let player = {
             x: 100,
@@ -71,92 +83,45 @@
         };
 
         let bots = [
-            { x: 800, y: 800, width: 50, height: 50, speed: 2 }
+            { x: 200, y: 200, width: 50, height: 50, speed: 2 }
         ];
 
         function drawBackground() {
-            console.log("Drawing background"); // Debug log
-            ctx.fillStyle = '#87CEEB';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            if (backgroundImage.complete && backgroundImage.naturalHeight !== 0) {
+                ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+            } else {
+                ctx.fillStyle = '#87CEEB';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
         }
 
         function drawPlayer() {
-            console.log("Drawing player"); // Debug log
-            ctx.fillStyle = 'blue';
-            ctx.fillRect(player.x - camera.x, player.y - camera.y, player.width, player.height);
+            if (playerImage.complete && playerImage.naturalHeight !== 0) {
+                ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
+            } else {
+                ctx.fillStyle = 'blue';
+                ctx.fillRect(player.x, player.y, player.width, player.height);
+            }
         }
 
         function drawBots() {
-            console.log("Drawing bots"); // Debug log
             bots.forEach(bot => {
-                ctx.fillStyle = 'red';
-                ctx.fillRect(bot.x - camera.x, bot.y - camera.y, bot.width, bot.height);
-                moveBot(bot);
+                if (enemyImage.complete && enemyImage.naturalHeight !== 0) {
+                    ctx.drawImage(enemyImage, bot.x, bot.y, bot.width, bot.height);
+                } else {
+                    ctx.fillStyle = 'red';
+                    ctx.fillRect(bot.x, bot.y, bot.width, bot.height);
+                }
             });
         }
 
-        function moveBot(bot) {
-            let dx = player.x - bot.x;
-            let dy = player.y - bot.y;
-            let distance = Math.sqrt(dx * dx + dy * dy);
-            bot.x += (dx / distance) * bot.speed;
-            bot.y += (dy / distance) * bot.speed;
-
-            if (distance < player.width) {
-                player.health -= 0.1;
-                updateHealth();
-            }
-        }
-
-        function updateHealth() {
-            const healthBar = document.getElementById('health');
-            healthBar.style.width = player.health + '%';
-            if (player.health <= 0) {
-                alert('Game Over! You have been defeated.');
-                player.health = 100;
-                updateHealth();
-            }
-        }
-
-        function handleInput() {
-            if (keys['ArrowUp']) player.y -= player.speed;
-            if (keys['ArrowDown']) player.y += player.speed;
-            if (keys['ArrowLeft']) player.x -= player.speed;
-            if (keys['ArrowRight']) player.x += player.speed;
-        }
-
-        let keys = {};
-        let camera = {
-            x: 0,
-            y: 0,
-            width: canvas.width,
-            height: canvas.height
-        };
-
-        function updateCamera() {
-            camera.x = Math.max(0, Math.min(player.x - camera.width / 2, map.width - camera.width));
-            camera.y = Math.max(0, Math.min(player.y - camera.height / 2, map.height - camera.height));
-        }
-
         function gameLoop() {
-            console.log("Game loop running"); // Debug log
             ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas before drawing
             drawBackground();
-            handleInput();
-            updateCamera();
-
             drawPlayer();
             drawBots();
             requestAnimationFrame(gameLoop);
         }
-
-        window.addEventListener('keydown', (e) => {
-            keys[e.key] = true;
-        });
-
-        window.addEventListener('keyup', (e) => {
-            keys[e.key] = false;
-        });
 
         gameLoop();
     </script>
